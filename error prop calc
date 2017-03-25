@@ -1,0 +1,88 @@
+
+# This program computes the error propagation for any quantity
+# You will enter the number of variables in your quantity 
+# then you will write the expression
+#Then You substitute the values
+
+import sympy as sp, time
+
+nbr_variables = input('Enter the number of variables: ')
+
+while not nbr_variables.isnumeric():
+
+	print('Enter an interger, please\n')
+	nbr_variables = input('Enter the number of variables including the uncertainties: ')
+
+nbr_variables = int(nbr_variables)
+
+variables = {}
+
+for n in range(nbr_variables):
+
+	entry = input('Name of variable '+str(n)+' : ')
+
+	delta_entry = 'delta'+entry
+
+	variables[entry] = sp.Symbol(entry)
+
+	variables[delta_entry] = sp.Symbol(delta_entry)
+
+
+def getting_expression():
+
+	expression = input('Enter the correct formula of the quantity: ')
+
+	expr = sp.sympify(expression)
+
+	return expr
+
+expr = getting_expression()
+
+values = {}
+
+def getting_values():
+
+	print('\nEnter and the uncertainty for each variable. If there is no uncertainty, unter 0\n')
+
+	time.sleep(0.5)
+
+	for n in range(nbr_variables):
+
+		v = input(str(variables[n])+' = ')
+
+		delta = input('Uncertainty of ' + str(variables[n]) + ' = ')
+
+		values[variables[n]] = [float(v), float(delta)]
+
+#getting_values()
+
+sp.pprint(expr)
+
+def partial_derivative(f, var):
+
+	partial_diff = sp.diff(f, var)
+
+	return partial_diff
+
+
+for v in variables:
+
+	tmp += partial_derivative(expr, v) * delta
+
+
+
+
+delta = sp.Symbol('delta_'+str(variables[0]))
+
+tmp = (partial_derivative(expr, variables[0]) * delta)**2
+
+for n in range(1, nbr_variables):
+
+	delta = sp.Symbol('delta_'+str(variables[n]))
+
+	print(partial_derivative(expr, variables[n]))
+
+	tmp += (partial_derivative(expr, variables[n]) * delta )**2
+
+
+
