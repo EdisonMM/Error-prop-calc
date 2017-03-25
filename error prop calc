@@ -1,88 +1,167 @@
+import sympy as sp
 
-# This program computes the error propagation for any quantity
-# You will enter the number of variables in your quantity 
-# then you will write the expression
-#Then You substitute the values
-
-import sympy as sp, time
-
-nbr_variables = input('Enter the number of variables: ')
-
-while not nbr_variables.isnumeric():
-
-	print('Enter an interger, please\n')
-	nbr_variables = input('Enter the number of variables including the uncertainties: ')
-
-nbr_variables = int(nbr_variables)
-
+sp.init_printing()
+nbr_variables = 0
 variables = {}
+values = {}
 
-for n in range(nbr_variables):
+class Variable:                 
 
-	entry = input('Name of variable '+str(n)+' : ')
+	def __init__(self, name):
 
-	delta_entry = 'delta'+entry
+		self.name = sp.Symbol(name)
 
-	variables[entry] = sp.Symbol(entry)
+		self.nameString = name 
 
-	variables[delta_entry] = sp.Symbol(delta_entry)
+		self.value = 0
 
+		self.uncertainty = 0
+
+
+	def set_value(self, value):
+
+		self.value = float(value)
+
+
+        
+	def set_uncertainty(self, uncertainty):
+
+			self.uncertainty = float(uncertainty)
+
+
+def getting_variables():
+
+	nbr = input('Enter the number of variables: ')
+
+	while not nbr.isnumeric():
+
+		print('Enter an interger, please\n')
+		nbr = input('Enter the number of variables including the uncertainties: ')
+
+	nbr_variables = int(nbr)
+
+	for n in range(nbr_variables):                               
+
+		entry = input('Name of variable '+str(n + 1)+' : ')
+
+		variables[entry] = Variable(entry)
 
 def getting_expression():
 
-	expression = input('Enter the correct formula of the quantity: ')
+	expression = input('\nEnter the correct formula of the quantity: ')
 
 	expr = sp.sympify(expression)
 
 	return expr
 
-expr = getting_expression()
 
-values = {}
+def error_formula():
+
+	tmp = 0
+
+	for v in variables:
+
+		tmp += (sp.diff(expression, variables[v].name) * sp.Symbol('delta_'+variables[v].nameString))**2
+
+    
+	error = sp.sqrt(tmp)    # This is the formula of the error
+
+	return error
 
 def getting_values():
 
-	print('\nEnter and the uncertainty for each variable. If there is no uncertainty, unter 0\n')
+	for v in variables:
 
-	time.sleep(0.5)
+		print('\nEnter the value of the value of', variables[v].nameString)
 
-	for n in range(nbr_variables):
+		value = input('Value: ')
 
-		v = input(str(variables[n])+' = ')
+		variables[v].set_value(value)
+        
 
-		delta = input('Uncertainty of ' + str(variables[n]) + ' = ')
+		print('\nEnter the uncertainty of', variables[v].nameString)
 
-		values[variables[n]] = [float(v), float(delta)]
+		uncertainty = input('\nUncertainty: ')
 
-#getting_values()
+		variables[v].set_uncertainty(uncertainty)
+        
+#sThe programm goes to calculate the value
 
-sp.pprint(expr)
+ans = 2
 
-def partial_derivative(f, var):
+while ans == 2:
 
-	partial_diff = sp.diff(f, var)
+	getting_variables()
 
-	return partial_diff
+	my_expression = False
 
+	while not my_expression:
 
-for v in variables:
+		expression = getting_expression()
 
-	tmp += partial_derivative(expr, v) * delta
+		print('\nThe expression you entered: \n')
 
+		sp.pprint(expression)
+        
 
+		print('\nChek! Is this the correct expression you want? \n')
 
+		expr_ans = int(input('1 = Yes\n2 = No\n : '))
 
-delta = sp.Symbol('delta_'+str(variables[0]))
+		if expr_ans == 1:
 
-tmp = (partial_derivative(expr, variables[0]) * delta)**2
+			my_expression = True
 
-for n in range(1, nbr_variables):
+		else:
+			my_expression = False
 
-	delta = sp.Symbol('delta_'+str(variables[n]))
+	print('\nThe error propagation formula: \n')
 
-	print(partial_derivative(expr, variables[n]))
+	error_formula = error_formula()
 
-	tmp += (partial_derivative(expr, variables[n]) * delta )**2
+	sp.pprint(error_formula)
 
+	ans = 1
+#iThe program goes Pass
+	while ans == 1:
 
+		getting_values()
 
+		for v in variables:
+
+			values[variables[v].name] = variables[v].value
+
+		error_value_tmp = 0
+        
+
+		for v in variables:
+
+			error_value_tmp += (sp.diff(expression, variables[v].name) * variables[v].uncertainty)**2
+
+		print('\n', values, '\n')
+
+		error_value = error_value_tmp.subs(values)
+
+		error_value = error_value**0.5
+
+		print('\nError value: ', error_value)
+
+		print('\nDo you want to calculate for different values? \n')#d
+
+		ans = input('1 = Yes\n2 = No\n: ')
+
+		ans = int(ans)
+        
+
+	print('\nExit ?')
+
+	exit = input('1 = Yes\n2 = No\n: ')
+
+	if exit == 2:
+
+		ans = 2
+
+	else:
+
+		ans = 1
+        #eThe program goes Pass
