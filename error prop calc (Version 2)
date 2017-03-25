@@ -1,0 +1,182 @@
+import sympy as sp
+
+sp.init_printing()
+nbr_variables = 0
+variables = {}
+values = {}
+
+class Variable:                 
+
+	def __init__(self, name):
+
+		self.name = sp.Symbol(name)
+
+		self.nameString = name 
+
+		self.value = 0
+
+		self.uncertainty = 0
+
+
+	def set_value(self, value):
+
+		try:
+
+			self.value = float(value)
+
+		except ValueError:
+
+			print('\nSorry, the value is not a number. We will use it as a variable')
+
+			self.value = sp.Symbol(value)
+        
+	def set_uncertainty(self, uncertainty):
+
+		try:
+
+			self.uncertainty = float(uncertainty)
+
+		except ValueError:
+
+			print('\nSorry, The value is not a number. We will use it as a variable')
+
+			self.uncertainty = sp.Symbol(uncertainty)
+
+
+def getting_variables():
+
+	nbr = input('Enter the number of variables: ')
+
+	while not nbr.isnumeric():
+
+		print('Enter an interger, please\n')
+		nbr = input('Enter the number of variables including the uncertainties: ')
+
+	nbr_variables = int(nbr)
+
+	for n in range(nbr_variables):                               
+
+		entry = input('Name of variable '+str(n + 1)+' : ')
+
+		variables[entry] = Variable(entry)
+
+def getting_expression():
+
+	expression = input('\nEnter the correct formula of the quantity: ')
+
+	expr = sp.sympify(expression)
+
+	return expr
+
+
+def error_formula():
+
+	tmp = 0
+
+	for v in variables:
+
+		tmp += (sp.diff(expression, variables[v].name) * sp.Symbol('delta_'+variables[v].nameString))**2
+
+    
+	error = sp.sqrt(tmp)    # This is the formula of the error
+
+	return error
+
+def getting_values():
+
+	for v in variables:
+
+		print('\nEnter the value of the value of', variables[v].nameString)
+
+		value = input('Value: ')
+
+		variables[v].set_value(value)
+
+
+		print('\nEnter the uncertainty of', variables[v].nameString)
+
+		uncertainty = input('\nUncertainty: ')
+
+		variables[v].set_uncertainty(uncertainty)
+
+
+#sThe programm goes to calculate the value
+
+ans = 2
+
+while ans == 2:
+
+	getting_variables()
+
+	my_expression = False
+
+	while not my_expression:
+
+		expression = getting_expression()
+
+		print('\nThe expression you entered: \n')
+
+		sp.pprint(expression)
+        
+
+		print('\nChek! Is this the correct expression you want? \n')
+
+		expr_ans = int(input('1 = Yes\n2 = No\n : '))
+
+		if expr_ans == 1:
+
+			my_expression = True
+
+		else:
+			my_expression = False
+
+	print('\nThe error propagation formula: \n')
+
+	error_formula = error_formula()
+
+	sp.pprint(error_formula)
+
+	ans = 1
+#iThe program goes Pass
+	while ans == 1:
+
+		getting_values()
+
+		for v in variables:
+
+			values[variables[v].name] = variables[v].value
+
+		error_value_tmp = 0
+        
+
+		for v in variables:
+
+			error_value_tmp += (sp.diff(expression, variables[v].name) * variables[v].uncertainty)**2
+
+		print('\n', values, '\n')
+
+		error_value = error_value_tmp.subs(values)
+
+		error_value = error_value**0.5
+
+		print('\nError value: ', error_value)
+
+		print('\nDo you want to calculate for different values? \n')#d
+
+		ans = input('1 = Yes\n2 = No\n: ')
+
+		ans = int(ans)
+        
+
+	print('\nExit ?')
+
+	exit = input('1 = Yes\n2 = No\n: ')
+
+	if exit == 2:
+
+		ans = 2
+
+	else:
+
+		ans = 1
+        #eThe program goes Pass
